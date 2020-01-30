@@ -7,5 +7,6 @@
   <modules>
   	<module>jdbcutils-postgis</module>
   	<module>jdbcutils-core</module>
+  	<module>jdbcutils-localdate</module>
   </modules>
 </project>
