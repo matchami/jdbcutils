@@ -30,8 +30,8 @@ public class PostGISJDBCUtils extends JDBCUtils {
 	}
 
 	@Override
-	protected Object getPersistenceObject(Field field, Object toPersist) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-		Object o = super.getPersistenceObject(field, toPersist);
+	protected Object getPersistenceObject(Field field, Object toPersist, boolean forProcessing) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		Object o = super.getPersistenceObject(field, toPersist, forProcessing);
 		
 		if (o != null) {
 			Class<?> theClass = o.getClass();

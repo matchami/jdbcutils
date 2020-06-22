@@ -370,7 +370,7 @@ public class JDBCUtils {
 			
 			Object value = null;
 			try {
-				value = getPersistenceObject(field, o);
+				value = getPersistenceObject(field, o, true);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				//Shouldn't ever happen - null is OK if it does
 			}
@@ -429,8 +429,8 @@ public class JDBCUtils {
 			
 			Object value = null;
 			try {
-				value = getPersistenceObject(field, o);
-				Object existingValue = getPersistenceObject(field, existingObject);
+				Object existingValue = getPersistenceObject(field, existingObject, false);
+				value = getPersistenceObject(field, o, true);
 				if (nullSafeEquals(value, existingValue))
 					continue;
 				
@@ -462,7 +462,7 @@ public class JDBCUtils {
 		}
 	}
 
-	
+
 	private boolean nullSafeEquals(Object v1, Object v2) {
 		if (v1 == null && v2 == null)
 			return true;
@@ -488,7 +488,7 @@ public class JDBCUtils {
 				continue;
 		
 			try {
-				fields.put(getColumnName(field, col), getPersistenceObject(field, o));
+				fields.put(getColumnName(field, col), getPersistenceObject(field, o, true));
 				logger.debug("Putting " + getColumnName(field, col) + ": " +getGetter(field).invoke(o));
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				//Shouldn't ever happen - null is OK if it does
@@ -514,6 +514,18 @@ public class JDBCUtils {
 		}
 	}
 	
+	/**
+	 * A cautious update will look for data on the existing object as well as the saving object.
+	 * @param forProcessing informs this method that the request should NOT be considered as a serialisation request
+	 */
+	protected Object getPersistenceObject(Field field, Object toPersist, boolean forProcessing) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		return getPersistenceObject(field, toPersist);
+	}
+	
+	/**
+	 * Use the getPersistenceObject(Field field, Object toPersist, boolean forProcessing) variant in preference
+	 */
+	@Deprecated
 	protected Object getPersistenceObject(Field field, Object toPersist) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		if (field.getType().isEnum()) {
 			return getGetter(field).invoke(toPersist).toString();
