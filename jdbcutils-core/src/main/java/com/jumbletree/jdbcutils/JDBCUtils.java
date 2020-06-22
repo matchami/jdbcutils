@@ -443,18 +443,22 @@ public class JDBCUtils {
 			types.add(field.getType());
 		}
 		
-		final String sql = "UPDATE " + getTable(clazz) + " SET "
-				+ query.substring(1) + " WHERE " + getColumnName(idField, null) + " = ?";
-
-		try {
-			values.add(getGetter(idField).invoke(o));
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			//Misconfigured class
-			logger.error("Misconfigured class", e);
-		}
-		Object[] valArray = values.toArray();
+		//Check if there were actual updates
+		if (query.length() > 0) {
 		
-		writeTemplate.update(sql, valArray);
+			final String sql = "UPDATE " + getTable(clazz) + " SET "
+					+ query.substring(1) + " WHERE " + getColumnName(idField, null) + " = ?";
+	
+			try {
+				values.add(getGetter(idField).invoke(o));
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				//Misconfigured class
+				logger.error("Misconfigured class", e);
+			}
+			Object[] valArray = values.toArray();
+			
+			writeTemplate.update(sql, valArray);
+		}
 		
 		ObjectCache cache = ObjectCache.get();
 		if (cache.get(clazz, getID(o)) != o) {
