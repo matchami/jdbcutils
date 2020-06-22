@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.jumbletree</groupId>
     <artifactId>jumbletree-jdbcutils</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
   </parent>
   <artifactId>jdbcutils-postgis</artifactId>
   	<properties>

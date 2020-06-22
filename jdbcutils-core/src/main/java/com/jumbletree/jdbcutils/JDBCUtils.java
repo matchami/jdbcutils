@@ -399,6 +399,78 @@ public class JDBCUtils {
 		}
 	}
 
+	public <T> void cautiousUpdate(T o) {
+		StringBuilder query = new StringBuilder();
+		
+		@SuppressWarnings("unchecked")
+		Class<T> clazz = (Class<T>)o.getClass();
+		
+		final List<Object> values = new ArrayList<>();
+		final List<Class<?>> types = new ArrayList<>();
+		Field idField = null;
+		
+		for (Field field : getAllFields(clazz)) {
+			if (field.getAnnotation(Id.class) != null) {
+				idField = field;
+				break;
+			}
+		}
+		
+		T existingObject = get(clazz, ((Integer)getID(o)).intValue());
+
+		for (Field field : getAllFields(clazz)) {
+			if (field.getAnnotation(Id.class) != null) {
+				continue;
+			}
+			Column col = field.getAnnotation(Column.class);
+			
+			if (col == null)
+				continue;
+			
+			Object value = null;
+			try {
+				value = getPersistenceObject(field, o);
+				Object existingValue = getPersistenceObject(field, existingObject);
+				if (nullSafeEquals(value, existingValue))
+					continue;
+				
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				//Shouldn't ever happen - null is OK if it does
+			}
+
+			query.append(",").append(getColumnName(field, col)).append(" = ?");
+			values.add(value);
+			types.add(field.getType());
+		}
+		
+		final String sql = "UPDATE " + getTable(clazz) + " SET "
+				+ query.substring(1) + " WHERE " + getColumnName(idField, null) + " = ?";
+
+		try {
+			values.add(getGetter(idField).invoke(o));
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			//Misconfigured class
+			logger.error("Misconfigured class", e);
+		}
+		Object[] valArray = values.toArray();
+		
+		writeTemplate.update(sql, valArray);
+		
+		ObjectCache cache = ObjectCache.get();
+		if (cache.get(clazz, getID(o)) != o) {
+			cache.set(clazz, getID(o), o);
+		}
+	}
+
+	
+	private boolean nullSafeEquals(Object v1, Object v2) {
+		if (v1 == null && v2 == null)
+			return true;
+		if (v1 == null ^ v2 == null)
+			return false;
+		return v1.equals(v2);
+	}
+
 	public void insert(Object o) {
 
 		Class<?> clazz = o.getClass();
