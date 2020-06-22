@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.jumbletree</groupId>
     <artifactId>jumbletree-jdbcutils</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
   </parent>
   <artifactId>jdbcutils-core</artifactId>
 	<properties>

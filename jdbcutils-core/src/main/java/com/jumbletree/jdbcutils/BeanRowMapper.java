@@ -117,14 +117,11 @@ public class BeanRowMapper<T> implements RowMapper<T> {
 			Collection<String> keys = setMappingOrder(mappings.keySet());
 			
 			for (String key : keys) {
-				System.out.println("Handling " + key);
 				Method theMethod = mappings.get(key);
 
 				Handler<T> handler = handlers.get(key);
-				System.out.println("Invoking handler");
 				handler.handle(t, theMethod, rs, key);
 				//Override for nulls...
-				System.out.println("Invoking null override");
 				if (rs.wasNull()) try {
 					theMethod.invoke(t, new Object[] {null});
 				} catch (Exception e) {
