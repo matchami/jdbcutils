@@ -416,7 +416,7 @@ public class JDBCUtils {
 			}
 		}
 		
-		T existingObject = get(clazz, ((Integer)getID(o)).intValue());
+		T existingObject = get(clazz, ((Integer)getID(o)).intValue(), false);
 
 		for (Field field : getAllFields(clazz)) {
 			if (field.getAnnotation(Id.class) != null) {
@@ -583,10 +583,14 @@ public class JDBCUtils {
 	}
 
 	public <T> T get(Class<T> clazz, int id) {
-		T t = ObjectCache.get().get(clazz, id);
+		return get(clazz, id, true);
+	}
+	public <T> T get(Class<T> clazz, int id, boolean useCache) {
+		T t = useCache ? ObjectCache.get().get(clazz, id) : null;
 		if (t == null) {
 			t = readTemplate.queryForObject("SELECT * FROM " + getTable(clazz) + " WHERE " + getIDColumn(clazz) + " = ?", getRowMapper(clazz), id);
-			ObjectCache.get().set(clazz, id, t);
+			if (useCache) 
+				ObjectCache.get().set(clazz, id, t);
 		}
 		return t;
 	}
